@@ -7,7 +7,6 @@
 //https://jasonlue.github.io/algo/2019/09/10/clustered-hashing-modify-on-iteration.html
 
 #pragma once
-
 #include <vector>
 #include "Hash.h"
 #include <climits>
@@ -307,8 +306,8 @@ private:
 	uint64_t cum_entries;
 	dict_delete_func delete_func;
 	DictEntry* table;
-	vector<IterCookie*>* cookies;
-	vector<DictEntry>* order;//order means the order of insertion. means no deletion until exit. will be inefficient. 
+	std::vector<IterCookie*>* cookies;
+	std::vector<DictEntry>* order;//order means the order of insertion. means no deletion until exit. will be inefficient. 
 public:
 	//Debugging
 #ifdef DEBUG
@@ -355,4 +354,3 @@ public:
 	T* RemoveEntry(const HashKey* key)
 		{ return (T*) Remove(key->Key(), key->Size(), key->Hash()); }
 };
-
