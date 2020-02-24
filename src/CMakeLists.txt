@@ -210,6 +210,7 @@ set(MAIN_SRCS
     util.cc
     module_util.cc
     zeek-affinity.cc
+    Aligner.cc
     Anon.cc
     Attr.cc
     Base64.cc
