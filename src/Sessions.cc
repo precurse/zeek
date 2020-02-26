@@ -16,6 +16,7 @@
 #include "Timer.h"
 #include "NetVar.h"
 #include "Reporter.h"
+#include "Aligner.h"
 
 #include "analyzer/protocol/icmp/ICMP.h"
 #include "analyzer/protocol/udp/UDP.h"
@@ -151,7 +152,8 @@ void NetSessions::NextPacket(double t, const Packet* pkt)
 			return;
 			}
 
-		const struct ip* ip = (const struct ip*) (pkt->data + pkt->hdr_size);
+		// Force alignment to a 4-byte boundary to avoid later alignment issues reported by ubsan
+		const struct ip* ip = (const struct ip*) Aligner::Align((const char*)(pkt->data + pkt->hdr_size), 4);
 		IP_Hdr ip_hdr(ip, false);
 		DoNextPacket(t, pkt, &ip_hdr, 0);
 		}
@@ -164,7 +166,8 @@ void NetSessions::NextPacket(double t, const Packet* pkt)
 			return;
 			}
 
-		IP_Hdr ip_hdr((const struct ip6_hdr*) (pkt->data + pkt->hdr_size), false, caplen);
+		// Force alignment to a 4-byte boundary to avoid later alignment issues reported by ubsan
+		IP_Hdr ip_hdr((const struct ip6_hdr*) Aligner::Align((const char*)(pkt->data + pkt->hdr_size), 4), false, caplen);
 		DoNextPacket(t, pkt, &ip_hdr, 0);
 		}
 
