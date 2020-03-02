@@ -240,7 +240,7 @@ public:
 	// Remove all entries.
 	void Clear();
 
-	unsigned int MemoryAllocation() const;
+	size_t MemoryAllocation() const;
 
 	/// The capacity of the table, Buckets + Overflow Size.
 	int Capacity(bool expected=false) const;
