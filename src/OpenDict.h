@@ -108,6 +108,7 @@ public:
 		{
 		distance = TOO_FAR_TO_REACH;
 #ifdef DEBUG
+
 		hash = 0;
 		key = nullptr;
 		value = nullptr;
@@ -167,11 +168,12 @@ public:
 
 	// Returns previous value, or 0 if none.
 	void* Insert(HashKey* key, void* val)
-		{ return Insert(key->TakeKey(), key->Size(), key->Hash(), val, 0); }
+		{ return Insert(key->TakeKey(), key->Size(), key->Hash(), val, false); }
+
 	// If copy_key is true, then the key is copied, otherwise it's assumed
 	// that it's a heap pointer that now belongs to the Dictionary to
 	// manage as needed.
-	void* Insert(void* key, int key_size, hash_t hash, void* val, int copy_key);
+	void* Insert(void* key, int key_size, hash_t hash, void* val, bool copy_key);
 
 	// Removes the given element.  Returns a pointer to the element in
 	// case it needs to be deleted.  Returns 0 if no such element exists.
@@ -223,7 +225,7 @@ public:
 	// If return_hash is true, a HashKey for the entry is returned in h,
 	// which should be delete'd when no longer needed.
 	IterCookie* InitForIteration() const;
-	void* NextEntry(HashKey*& h, IterCookie*& cookie, int return_hash) const;
+	void* NextEntry(HashKey*& h, IterCookie*& cookie, bool return_hash) const;
 	void StopIteration(IterCookie* cookie) const;
 
 	void SetDeleteFunc(dict_delete_func f)		{ delete_func = f; }
@@ -307,7 +309,7 @@ private:
 
 	//Iteration
 	IterCookie* InitForIterationNonConst();
-	void* NextEntryNonConst(HashKey*& h, IterCookie*& cookie, int return_hash);
+	void* NextEntryNonConst(HashKey*& h, IterCookie*& cookie, bool return_hash);
 	void StopIterationNonConst(IterCookie* cookie);
 
 	//Lookup
@@ -407,10 +409,10 @@ public:
 	T* NextEntry(IterCookie*& cookie) const
 		{
 		HashKey* h;
-		return (T*) Dictionary::NextEntry(h, cookie, 0);
+		return (T*) Dictionary::NextEntry(h, cookie, false);
 		}
 	T* NextEntry(HashKey*& h, IterCookie*& cookie) const
-		{ return (T*) Dictionary::NextEntry(h, cookie, 1); }
+		{ return (T*) Dictionary::NextEntry(h, cookie, true); }
 	T* RemoveEntry(const HashKey* key)
 		{ return (T*) Remove(key->Key(), key->Size(), key->Hash()); }
 };

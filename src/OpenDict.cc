@@ -116,7 +116,7 @@ hash_t Dictionary::FibHash(hash_t h) const
 	return h;
 	}
 
-//return position in dict with 2^bit size.
+// return position in dict with 2^bit size.
 int Dictionary::BucketByHash(hash_t h, int log2_table_size) const //map h to n-bit
 	{
 	ASSERT(log2_table_size>=0);
@@ -584,10 +584,12 @@ int Dictionary::LookupIndex(const void* key, int key_size, hash_t hash, int buck
 // Insert
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void* Dictionary::Insert(void* key, int key_size, hash_t hash, void* val, int copy_key)
+void* Dictionary::Insert(void* key, int key_size, hash_t hash, void* val, bool copy_key)
 	{
 	ASSERT_VALID(this);
-	ASSERT(num_iterators == 0 || (cookies && cookies->size() == num_iterators)); //only robust iterators exist.
+
+	// Allow insertions only if there's no active non-robust iterations.
+	ASSERT(num_iterators == 0 || (cookies && cookies->size() == num_iterators));
 
 	// Initialize the table if it hasn't been done yet. This saves memory storing a bunch
 	// of empty dicts.
@@ -913,7 +915,7 @@ void Dictionary::StopIterationNonConst(IterCookie* cookie) //const
 	delete cookie;
 	}
 
-void* Dictionary::NextEntryNonConst(HashKey*& h, IterCookie*& c, int return_hash) //const
+void* Dictionary::NextEntryNonConst(HashKey*& h, IterCookie*& c, bool return_hash) //const
 	{
 	// If there are any inserted entries, return them first.
 	// That keeps the list small and helps avoiding searching
@@ -928,6 +930,7 @@ void* Dictionary::NextEntryNonConst(HashKey*& h, IterCookie*& c, int return_hash
 		c = nullptr;
 		return nullptr; //end of iteration.
 		}
+
 	if ( c->inserted && ! c->inserted->empty() )
 		{
 		// Return the last one. Order doesn't matter,
@@ -942,7 +945,7 @@ void* Dictionary::NextEntryNonConst(HashKey*& h, IterCookie*& c, int return_hash
 
 	if ( c->next < 0 )
 		c->next = Next(-1);
-	int capacity = Capacity();
+
 	// if resize happens during iteration. before sizeup, c->next points to Capacity(),
 	// but now Capacity() doubles up and c->next doesn't point to the end anymore.
 	// this is fine because c->next may be filled now.
@@ -950,11 +953,13 @@ void* Dictionary::NextEntryNonConst(HashKey*& h, IterCookie*& c, int return_hash
 	// before sizeup, we use c->next >= Capacity() to indicate the end of the iteration.
 	// now this guard is invalid, we may face c->next is valid but empty now.F
 	//fix it here.
+	int capacity = Capacity();
 	if ( c->next < capacity && table[c->next].Empty() )
 		{
 		ASSERT(false); //stop to check the condition here. why it's happening.
 		c->next = Next(c->next);
 		}
+
 	//filter out visited keys.
 	if ( c->visited && ! c->visited->empty() )
 		//filter out visited entries.
@@ -981,6 +986,7 @@ void* Dictionary::NextEntryNonConst(HashKey*& h, IterCookie*& c, int return_hash
 	void* v = table[c->next].value;
 	if ( return_hash )
 		h = new HashKey(table[c->next].GetKey(), table[c->next].key_size, table[c->next].hash);
+
 	//prepare for next time.
 	c->next = Next(c->next);
 	ASSERT_VALID(c);
@@ -993,10 +999,10 @@ IterCookie* Dictionary::InitForIteration() const
 	Dictionary* dp = const_cast<Dictionary*>(this);
 	return dp->InitForIterationNonConst();
 	}
-void* Dictionary::NextEntry(HashKey*& h, IterCookie*& cookie, int return_hash) const
+void* Dictionary::NextEntry(HashKey*& h, IterCookie*& cookie, bool return_hash) const
 	{
 	Dictionary* dp = const_cast<Dictionary*>(this);
-	return dp->NextEntryNonConst(h,cookie, return_hash);
+	return dp->NextEntryNonConst(h, cookie, return_hash);
 	}
 void Dictionary::StopIteration(IterCookie* cookie) const
 	{
