@@ -146,24 +146,6 @@ int Dictionary::BucketByPosition(int position) const
 ////////////////////////////////////////////////////////////////////////////////////////////////
 //Cluster Math
 ////////////////////////////////////////////////////////////////////////////////////////////////
-int Dictionary::HeadOfClusterByBucket(int bucket) const
-	{
-	ASSERT(bucket>=0 && bucket < Buckets());
-	int i = bucket;
-	for (; i < Capacity() && ! table[i].Empty() && BucketByPosition(i) < bucket; i++)
-		if ( BucketByPosition(i) == bucket )
-			return i;
-
-	return -1;
-	}
-
-int Dictionary::TailOfClusterByBucket(int bucket) const
-	{
-	int end = EndOfClusterByBucket(bucket);
-	if ( end - 1 >= 0 && ! table[end-1].Empty() && BucketByPosition(end - 1) == bucket )
-		return end - 1;
-	return -1;
-	}
 
 int Dictionary::EndOfClusterByBucket(int bucket) const
 	{
