@@ -153,6 +153,7 @@ enum Expected {
 
 enum Client_Capabilities {
 	# Expects an OK (instead of EOF) after the resultset rows of a Text Resultset. 
+	CLIENT_SSL = 0x00000800,
 	CLIENT_DEPRECATE_EOF = 0x01000000,
 };
 
@@ -214,7 +215,10 @@ type Handshake_v10 = record {
 	capability_flags_2     : uint16;
 	auth_plugin_data_len   : uint8;
 	auth_plugin_name       : NUL_String;
-};
+}
+&let {
+    SUPPORT_SSL:                bool = capability_flag_1 & 0x0800;
+} &byteorder=littleendian;
 
 type Handshake_v9 = record {
 	server_version: NUL_String;
@@ -240,7 +244,8 @@ type Handshake_Response_Packet_v10 = record {
 	password    : bytestring &restofdata;
 } &let {
 	deprecate_eof: bool = $context.connection.set_deprecate_eof(cap_flags & CLIENT_DEPRECATE_EOF);
-};
+	client_ssl: bool = $context.connection.set_client_ssl(cap_flags & CLIENT_SSL);
+} &byteorder=littleendian;
 
 type Handshake_Response_Packet_v9 = record {
 	cap_flags    : uint16;
@@ -427,6 +432,7 @@ refine connection MySQL_Conn += {
 		uint32 remaining_cols_;
 		uint32 results_seen_;
 		bool deprecate_eof_;
+		bool client_ssl_;
 	%}
 
 	%init{
@@ -438,6 +444,7 @@ refine connection MySQL_Conn += {
 		remaining_cols_ = 0;
 		results_seen_ = 0;
 		deprecate_eof_ = false;
+		client_ssl_ = false;
 	%}
 
 	function get_version(): uint8
@@ -481,6 +488,17 @@ refine connection MySQL_Conn += {
 	function set_deprecate_eof(d: bool): bool
 		%{
 		deprecate_eof_ = d;
+		return true;
+		%}
+
+	function get_client_ssl(): bool
+		%{
+		return client_ssl_;
+		%}
+
+	function set_client_ssl(d: bool): bool
+		%{
+		client_ssl_ = d;
 		return true;
 		%}
 
