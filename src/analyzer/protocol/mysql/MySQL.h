@@ -5,8 +5,7 @@
 #include "events.bif.h"
 #include "analyzer/protocol/tcp/TCP.h"
 
-#include "mysql_pac.h"
-
+namespace binpac { namespace MySQL { class MySQL_Conn; } }
 namespace analyzer { namespace MySQL {
 
 class MySQL_Analyzer

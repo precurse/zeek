@@ -8,7 +8,9 @@
 %include bro.pac
 
 %extern{
+	#include "MySQL.h"
 	#include "events.bif.h"
+
 %}
 
 analyzer MySQL withcontext {

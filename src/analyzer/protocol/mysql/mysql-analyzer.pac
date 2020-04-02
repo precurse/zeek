@@ -24,10 +24,15 @@ refine flow MySQL_Flow += {
 
 		if ( mysql_handshake )
 			{
-			if ( ${msg.v10_response.client_ssl} )
-				connection()->bro_analyzer()->TLSHandshake();
+			if ( ${msg.version} == 10 && ${msg.v10_response.client_ssl}) {
+				fprintf(stderr, "Passed msg.verion=10 and client_ssl\n");
+				fprintf(stderr, "%u\n",${msg.v10_response.cap_flags});
+				static_cast<analyzer::MySQL::MySQL_Analyzer*>(connection()->bro_analyzer())->TLSHandshake();
+				BifEvent::generate_mysql_handshake_tls(connection()->bro_analyzer(),
+								       connection()->bro_analyzer()->Conn());
+			}
 
-			if ( ${msg.version} == 10 )
+			if ( ${msg.version} == 10 && ! ${msg.v10_response.client_ssl})
 				BifEvent::generate_mysql_handshake(connection()->bro_analyzer(),
 				                                   connection()->bro_analyzer()->Conn(),
 				                                   new StringVal(c_str(${msg.v10_response.username})));

@@ -5,6 +5,7 @@
 #include "analyzer/Manager.h"
 #include "Reporter.h"
 #include "events.bif.h"
+#include "mysql_pac.h"
 
 using namespace analyzer::MySQL;
 
@@ -37,13 +38,14 @@ void MySQL_Analyzer::EndpointEOF(bool is_orig)
 
 void MySQL_Analyzer::DeliverStream(int len, const u_char* data, bool orig)
 	{
-	tcp::TCP_ApplicationAnalyzer::DeliverStream(len, data, orig);
 
 	if ( tls_active )
 	{
 		ForwardStream(len, data, orig);
 		return;
 	}
+
+	tcp::TCP_ApplicationAnalyzer::DeliverStream(len, data, orig);
 
 	assert(TCP());
 	if ( TCP()->IsPartial() )
