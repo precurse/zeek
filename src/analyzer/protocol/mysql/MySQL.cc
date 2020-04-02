@@ -2,6 +2,7 @@
 
 #include "MySQL.h"
 #include "analyzer/protocol/tcp/TCP_Reassembler.h"
+#include "analyzer/Manager.h"
 #include "Reporter.h"
 #include "events.bif.h"
 
@@ -12,6 +13,7 @@ MySQL_Analyzer::MySQL_Analyzer(Connection* c)
 	{
 	interp = new binpac::MySQL::MySQL_Conn(this);
 	had_gap = false;
+	tls_active = false;
 	}
 
 MySQL_Analyzer::~MySQL_Analyzer()
@@ -36,6 +38,12 @@ void MySQL_Analyzer::EndpointEOF(bool is_orig)
 void MySQL_Analyzer::DeliverStream(int len, const u_char* data, bool orig)
 	{
 	tcp::TCP_ApplicationAnalyzer::DeliverStream(len, data, orig);
+
+	if ( tls_active )
+	{
+		ForwardStream(len, data, orig);
+		return;
+	}
 
 	assert(TCP());
 	if ( TCP()->IsPartial() )
@@ -62,4 +70,16 @@ void MySQL_Analyzer::Undelivered(uint64_t seq, int len, bool orig)
 	tcp::TCP_ApplicationAnalyzer::Undelivered(seq, len, orig);
 	had_gap = true;
 	interp->NewGap(orig, len);
+	}
+
+void MySQL_Analyzer::TLSHandshake()
+	{
+	// TLS was initiated. This means we saw a client request a TLS
+	// connection. From here on, everything should be a binary
+	// TLS datastream.
+	tls_active = true;
+
+	Analyzer* ssl = analyzer_mgr->InstantiateAnalyzer("SSL", Conn());
+	if ( ssl )
+		AddChildAnalyzer(ssl);
 	}

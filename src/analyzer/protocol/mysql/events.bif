@@ -75,3 +75,8 @@ event mysql_server_version%(c: connection, ver: string%);
 ## .. zeek:see:: mysql_command_request mysql_error mysql_ok mysql_server_version
 event mysql_handshake%(c: connection, username: string%);
 
+## Generated when a MySQL connection goes encrypted after a successful
+## TLS connection upgrade happens between the client and the server.
+##
+## c: The connection.
+event mysql_handshake_tls%(c: connection%);

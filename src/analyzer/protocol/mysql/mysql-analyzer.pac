@@ -24,8 +24,8 @@ refine flow MySQL_Flow += {
 
 		if ( mysql_handshake )
 			{
-            if ( ${msg.v10_response.client_ssl} )
-                printf("THIS IS A CLIENT SSL CONNECTION\n");
+			if ( ${msg.v10_response.client_ssl} )
+				connection()->bro_analyzer()->TLSHandshake();
 
 			if ( ${msg.version} == 10 )
 				BifEvent::generate_mysql_handshake(connection()->bro_analyzer(),

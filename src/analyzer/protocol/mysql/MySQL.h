@@ -23,6 +23,8 @@ public:
 	void DeliverStream(int len, const u_char* data, bool orig) override;
 	void Undelivered(uint64_t seq, int len, bool orig) override;
 
+	void TLSHandshake();
+
 	// Overriden from tcp::TCP_ApplicationAnalyzer.
 	void EndpointEOF(bool is_orig) override;
 
@@ -32,6 +34,8 @@ public:
 protected:
 	binpac::MySQL::MySQL_Conn* interp;
 	bool had_gap;
+
+	bool tls_active;
 };
 
 } } // namespace analyzer::*
