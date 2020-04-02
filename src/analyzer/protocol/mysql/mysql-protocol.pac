@@ -152,8 +152,8 @@ enum Expected {
 };
 
 enum Client_Capabilities {
-	# Expects an OK (instead of EOF) after the resultset rows of a Text Resultset. 
 	CLIENT_SSL = 0x00000800,
+	# Expects an OK (instead of EOF) after the resultset rows of a Text Resultset. 
 	CLIENT_DEPRECATE_EOF = 0x01000000,
 };
 
@@ -218,7 +218,7 @@ type Handshake_v10 = record {
 }
 &let {
     SUPPORT_SSL:                bool = capability_flag_1 & 0x0800;
-} &byteorder=littleendian;
+};
 
 type Handshake_v9 = record {
 	server_version: NUL_String;
@@ -245,7 +245,7 @@ type Handshake_Response_Packet_v10 = record {
 } &let {
 	deprecate_eof: bool = $context.connection.set_deprecate_eof(cap_flags & CLIENT_DEPRECATE_EOF);
 	client_ssl: bool = $context.connection.set_client_ssl(cap_flags & CLIENT_SSL);
-} &byteorder=littleendian;
+};
 
 type Handshake_Response_Packet_v9 = record {
 	cap_flags    : uint16;
